@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import _uniqueId from 'lodash/uniqueId';
 
 import { Customer } from '../../../models/models';
@@ -53,17 +53,30 @@ const CustomerComponent: React.FC<Props> = ({ isEditMode, editableCustomer, onSa
     [customer],
   );
 
+  const isCustormerNotValid = useMemo(
+    () =>
+      !isEditMode
+        ? !customer.company ||
+          !validateEmail(customer.email) ||
+          !customer.firstName ||
+          !customer.lastName ||
+          customer.password.length < 8
+        : !customer.company ||
+          !validateEmail(customer.email) ||
+          !customer.firstName ||
+          !customer.lastName,
+    [customer],
+  );
+
+  const onCustomerNotValid = () => {
+    setSaveClick(true);
+    return null;
+  };
+
   const onClick = () => {
     if (!isEditMode) {
-      if (
-        !customer.company ||
-        !validateEmail(customer.email) ||
-        !customer.firstName ||
-        !customer.lastName ||
-        customer.password.length < 8
-      ) {
-        setSaveClick(true);
-        return null;
+      if (isCustormerNotValid) {
+        onCustomerNotValid();
       } else {
         const currentCustomer = { ...customer, id: _uniqueId() };
 
@@ -72,14 +85,8 @@ const CustomerComponent: React.FC<Props> = ({ isEditMode, editableCustomer, onSa
         onSave(currentCustomer);
       }
     } else {
-      if (
-        !customer.company ||
-        !validateEmail(customer.email) ||
-        !customer.firstName ||
-        !customer.lastName
-      ) {
-        setSaveClick(true);
-        return null;
+      if (isCustormerNotValid) {
+        onCustomerNotValid();
       } else {
         setSaveClick(false);
         setCustomer(INITIAL_STATE_VALUE);
