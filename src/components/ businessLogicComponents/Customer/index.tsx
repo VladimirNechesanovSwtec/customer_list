@@ -74,24 +74,18 @@ const CustomerComponent: React.FC<Props> = ({ isEditMode, editableCustomer, onSa
   };
 
   const onClick = () => {
-    if (!isEditMode) {
-      if (isCustormerNotValid) {
-        onCustomerNotValid();
-      } else {
-        const currentCustomer = { ...customer, id: _uniqueId() };
-
-        setSaveClick(false);
-        setCustomer(INITIAL_STATE_VALUE);
-        onSave(currentCustomer);
-      }
+    if (isCustormerNotValid) {
+      onCustomerNotValid();
     } else {
-      if (isCustormerNotValid) {
-        onCustomerNotValid();
+      if (!isEditMode) {
+        const currentCustomer = { ...customer, id: _uniqueId() };
+        onSave(currentCustomer);
       } else {
-        setSaveClick(false);
-        setCustomer(INITIAL_STATE_VALUE);
         onSave(customer);
       }
+
+      setSaveClick(false);
+      setCustomer(INITIAL_STATE_VALUE);
     }
   };
 
