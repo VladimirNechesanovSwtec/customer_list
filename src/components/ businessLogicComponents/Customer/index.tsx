@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useCallback, useEffect, useState } from 'react';
 import _uniqueId from 'lodash/uniqueId';
 
@@ -6,7 +7,7 @@ import Input from '../../common/Input';
 import Password from '../../common/Password';
 import Selector from '../../common/Selector';
 import { Variant } from '../../common/Text';
-import validateEmail from '../utils';
+import { validateEmail } from '../utils';
 import {
   ButtonText,
   ComponySection,
@@ -29,18 +30,19 @@ const INITIAL_STATE_VALUE: Customer = {
 };
 
 type Props = {
+  isEditMode: boolean;
+  editableCustomer?: Customer;
+
   onSave: (customer: Customer) => void;
 };
 
-const AddCustomer: React.FC<Props> = ({ onSave }) => {
+const CustomerComponent: React.FC<Props> = ({ isEditMode, editableCustomer, onSave }) => {
   const [customer, setCustomer] = useState<Customer>(INITIAL_STATE_VALUE);
   const [onSaveClick, setSaveClick] = useState(false);
 
   useEffect(() => {
-    return () => {
-      setCustomer(INITIAL_STATE_VALUE);
-    };
-  }, []);
+    if (isEditMode && editableCustomer) setCustomer(editableCustomer);
+  }, [editableCustomer, isEditMode]);
 
   const updateCustomer = useCallback(
     (fieldName: string, value: string) => {
@@ -51,24 +53,40 @@ const AddCustomer: React.FC<Props> = ({ onSave }) => {
     [customer],
   );
 
-  const onClick = useCallback(() => {
-    if (
-      !customer.company ||
-      !validateEmail(customer.email) ||
-      !customer.firstName ||
-      !customer.lastName ||
-      customer.password.length < 8
-    ) {
-      setSaveClick(true);
-      return null;
-    } else {
-      const currentCustomer = { ...customer, id: _uniqueId() };
+  const onClick = () => {
+    if (!isEditMode) {
+      if (
+        !customer.company ||
+        !validateEmail(customer.email) ||
+        !customer.firstName ||
+        !customer.lastName ||
+        customer.password.length < 8
+      ) {
+        setSaveClick(true);
+        return null;
+      } else {
+        const currentCustomer = { ...customer, id: _uniqueId() };
 
-      setSaveClick(false);
-      setCustomer(INITIAL_STATE_VALUE);
-      onSave(currentCustomer);
+        setSaveClick(false);
+        setCustomer(INITIAL_STATE_VALUE);
+        onSave(currentCustomer);
+      }
+    } else {
+      if (
+        !customer.company ||
+        !validateEmail(customer.email) ||
+        !customer.firstName ||
+        !customer.lastName
+      ) {
+        setSaveClick(true);
+        return null;
+      } else {
+        setSaveClick(false);
+        setCustomer(INITIAL_STATE_VALUE);
+        onSave(customer);
+      }
     }
-  }, [customer, onSave]);
+  };
 
   const renderContent = useCallback(() => {
     return (
@@ -111,14 +129,16 @@ const AddCustomer: React.FC<Props> = ({ onSave }) => {
             onChange={(value: string) => updateCustomer('email', value)}
           />
         </EmailSection>
-        <PasswordSection>
-          <Password
-            title="Password"
-            value={customer?.password || ''}
-            isError={onSaveClick && customer.password.length < 8}
-            onChange={(value: string) => updateCustomer('password', value)}
-          />
-        </PasswordSection>
+        {!isEditMode && (
+          <PasswordSection>
+            <Password
+              title="Password"
+              value={customer?.password || ''}
+              isError={onSaveClick && customer.password.length < 8}
+              onChange={(value: string) => updateCustomer('password', value)}
+            />
+          </PasswordSection>
+        )}
         <SaveButton onClick={onClick}>
           <ButtonText variant={Variant.Title}>Save</ButtonText>
         </SaveButton>
@@ -131,6 +151,7 @@ const AddCustomer: React.FC<Props> = ({ onSave }) => {
     customer.lastName,
     customer.password,
     customer.status,
+    isEditMode,
     onClick,
     onSaveClick,
     updateCustomer,
@@ -139,4 +160,4 @@ const AddCustomer: React.FC<Props> = ({ onSave }) => {
   return renderContent();
 };
 
-export default AddCustomer;
+export default CustomerComponent;
