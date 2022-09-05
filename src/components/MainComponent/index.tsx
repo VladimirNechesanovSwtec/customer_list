@@ -68,13 +68,10 @@ const MainComponent = () => {
     setCustomersList(updatedCustomersList);
   };
 
-  const onEdit = useCallback(
-    (id: string) => {
-      setEditableCustomer(customersList.find((customer) => customer.id === id));
-      setEditMode(true);
-    },
-    [customersList],
-  );
+  const onEdit = (id: string) => {
+    setEditableCustomer(customersList.find((customer) => customer.id === id));
+    setEditMode(true);
+  };
 
   const renderContent = useCallback(() => {
     return (
